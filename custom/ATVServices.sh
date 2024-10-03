@@ -21,7 +21,7 @@ get_config
 # Check for the mitm pkg
 
 get_mitm_pkg() { # This function is so hardcoded that I'm allergic to it 
-	busybox ps aux | grep -E -C0 "pokemod|gocheats|sy1vi3" | grep -C0 -v grep | awk -F ' ' '/com.pokemod/{print $NF} /com.sy1vi3/{print $NF} /com.gocheats.launcher/{print $NF}' | grep -E -C0 "gocheats|pokemod|sy1vi3" | sed -e 's/^[0-9]*://' -e 's@:.*@@g' | sort | uniq
+	busybox ps aux | grep -E -C0 "pokemod|gocheats|sy1vi3" | grep -C0 -v grep | awk -F ' ' '/com.pokemod/{print $NF} /com.sy1vi3/{print $NF} /com.nianticlabs.pokemongo.ares/{print $NF} /com.gocheats.launcher/{print $NF}' | grep -E -C0 "gocheats|pokemod|sy1vi3" | sed -e 's/^[0-9]*://' -e 's@:.*@@g' | sort | uniq
 }
 
 check_mitmpkg() {
@@ -40,6 +40,9 @@ check_mitmpkg() {
 	elif [ "$(pm list packages com.sy1vi3.cosmog)" = "package:com.sy1vi3.cosmog" ]; then
 		log -p i -t eMagiskATVService "Found Cosmog!"
 		MITMPKG=com.sy1vi3.cosmog
+	elif [ "$(pm list packages com.nianticlabs.pokemongo.ares)" = "package:com.nianticlabs.pokemongo.ares" ]; then
+		log -p i -t eMagiskATVService "Found Cosmog (Ares pkg name version)!"
+		MITMPKG=com.nianticlabs.pokemongo.ares
 	elif [ "$(pm list packages com.gocheats.launcher)" = "package:com.gocheats.launcher" ]; then
 		log -p i -t eMagiskATVService "Found GC!"
 		MITMPKG=com.gocheats.launcher
@@ -54,7 +57,7 @@ get_deviceName() {
 		mitmDeviceName=$(jq -r '.deviceName' /data/local/tmp/atlas_config.json)
 	elif [[ $MITMPKG == com.pokemod.aegis* ]] && [ -f /data/local/tmp/aegis_config.json ]; then
 		mitmDeviceName=$(jq -r '.deviceName' /data/local/tmp/aegis_config.json)
-	elif [[ $MITMPKG == com.sy1vi3.cosmog ]] && [ -f /data/local/tmp/cosmog.json ]; then
+	elif { [[ "$MITMPKG" == "com.sy1vi3.cosmog" || "$MITMPKG" == "com.nianticlabs.pokemongo.ares" ]] && [ -f /data/local/tmp/cosmog.json ]; }; then
 		mitmDeviceName=$(jq -r '.device_id' /data/local/tmp/cosmog.json)
 	elif [[ $MITMPKG == com.gocheats.launcher ]] && [ -f /data/local/tmp/config.json ]; then
 		mitmDeviceName=$(jq -r '.device_name' /data/local/tmp/config.json)
@@ -115,7 +118,7 @@ force_restart() {
 		elif [[ $MITMPKG == com.pokemod.aegis* ]]; then
 			am startservice $MITMPKG/com.pokemod.aegis.services.MappingService
 		fi
-	elif [[ $MITMPKG == com.sy1vi3* ]]; then
+	elif [[ $MITMPKG == com.sy1vi3* ]] || [[ $MITMPKG == "com.nianticlabs.pokemongo.ares" ]]; then
 		am force-stop $MITMPKG
 		sleep 5
 		am start -n $MITMPKG/.MainActivity
@@ -549,7 +552,7 @@ if result=$(check_mitmpkg); then
 					log_path="/data/local/tmp/atlas.log"
 				elif [[ $MITMPKG == com.pokemod.aegis* ]]; then
 					log_path="/data/local/tmp/aegis.log"
-				elif [[ $MITMPKG == com.sy1vi3* ]]; then
+				elif [[ $MITMPKG == com.sy1vi3* ]] || [[ $MITMPKG == "com.nianticlabs.pokemongo.ares" ]]; then
 					if ! ps -a | grep -vE "grep|worker" | grep "$MITMPKG" ; then
 						log -p i -t eMagiskATVService "Process $MITMPKG is not alive, starting it"
 						am start -n $MITMPKG/.MainActivity
