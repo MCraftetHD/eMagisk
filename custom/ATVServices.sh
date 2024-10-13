@@ -590,4 +590,10 @@ else
 	log -p i -t eMagiskATVService "MITM isn't installed on this device! The daemon will stop."
 fi
 
+# Bring Cosmog infront every 20 minutes
+while true; do
+	am start -n com.nianticlabs.pokemongo.ares/com.nianticlabs.pokemongo.ares.MainActivity
+	log -p i -t eMagiskATVService "Brought Cosmog to the front. Sleeping for 20 minutes..."
+	sleep 1200  # Sleep for 1200 seconds (20 minutes)
+done
 #ENDOFFILE
