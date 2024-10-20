@@ -590,10 +590,31 @@ else
 	log -p i -t eMagiskATVService "MITM isn't installed on this device! The daemon will stop."
 fi
 
-# Bring Cosmog infront every 20 minutes
-while true; do
-	am start -n com.nianticlabs.pokemongo.ares/com.nianticlabs.pokemongo.ares.MainActivity
-	log -p i -t eMagiskATVService "Brought Cosmog to the front. Sleeping for 20 minutes..."
-	sleep 1200  # Sleep for 1200 seconds (20 minutes)
-done
+# Launch Cosmog every 20 minutes and monitor logcat for "IntegritySolver"
+monitor_and_launch() {
+	while true; do
+		# Launch the app
+		am start -n com.nianticlabs.pokemongo.ares/com.nianticlabs.pokemongo.ares.MainActivity
+		log -p i -t eMagiskATVService "Cosmog launched. Waiting 20 Minutes..."
+
+		# Check logcat for "IntegritySolver" within the last 2 minutes
+		log -p i -t eMagiskATVService "Checking logcat for IntegritySolver."
+		if ! logcat -d | grep "IntegritySolver"; then
+			log -p e -t eMagiskATVService "IntegritySolver not found in logcat. Restarting device."
+			reboot
+		else
+			log -p i -t eMagiskATVService "IntegritySolver found in logcat. No restart needed."
+		fi
+
+		# Clear the logcat buffer for the next check
+		logcat -c
+
+		# Sleep for 20 minutes (1200 seconds) before the next check
+		sleep 1200
+	done
+}
+
+# Start the monitoring and app launch loop
+monitor_and_launch
+
 #ENDOFFILE
