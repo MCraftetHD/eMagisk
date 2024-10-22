@@ -218,20 +218,8 @@ on_install() {
     ui_print " "
     ui_print " "
     ui_print "================================================"
-    ui_print "installing ATV services..."
-    /system/bin/getevent -lc 1 2>&1 | /system/bin/grep VOLUME >$TMPDIR/events
-
-    ui_print " "
-
-    if cat $TMPDIR/events | grep "VOLUMEUP"; then
-        ui_print " >>> Not installing ATV Services!"
-        # rm "$TMPDIR/module.prop"
-        PROPFILE=false
-        export PROPFILE=false
-    else
-        ui_print " >>> Installing ATV services..."
-        cp -rf "$TMPDIR/custom/ATVServices.sh" "$MODPATH/ATVServices.sh"
-    fi
+    ui_print " >>> Installing ATV services..."
+    cp -rf "$TMPDIR/custom/ATVServices.sh" "$MODPATH/ATVServices.sh"
     ui_print "================================================"
 }
 
