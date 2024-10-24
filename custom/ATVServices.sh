@@ -19,6 +19,17 @@ force_restart() {
     fi
 }
 
+check_mitmpkg() {
+
+	if [ "$(pm list packages com.nianticlabs.pokemongo.ares)" = "package:com.nianticlabs.pokemongo.ares" ]; then
+		log -p i -t eMagiskcosmogJp "Found Cosmog (Ares pkg name version)!"
+		MITMPKG=com.nianticlabs.pokemongo.ares
+	else
+		log -p i -t eMagiskCosmogJp "No MITM installed. Abort!"
+		exit 1
+	fi
+}
+
 autoupdate() {
     local last_check_file="/data/local/tmp/.last_autoupdate_check"
     local check_interval=86400  # 24 hours in seconds
@@ -235,6 +246,7 @@ if [ ! -f "$cacert_path" ]; then
 fi
 
 # Main program starts here
+check_mitmpkg
 force_restart
 autoupdate
 monitor_and_launch
