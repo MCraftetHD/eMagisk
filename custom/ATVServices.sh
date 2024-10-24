@@ -235,6 +235,7 @@ if [ ! -f "$cacert_path" ]; then
 fi
 
 # Main program starts here
+force_restart
 autoupdate
 monitor_and_launch
 
