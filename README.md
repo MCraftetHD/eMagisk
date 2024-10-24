@@ -15,7 +15,7 @@ Installs and configures everything needed for the ATV to run Cosmog smoothly
 
 ------------------
 
-#Install via CMD (Windows)
+## Install via CMD (Windows)
 
 1. Install adb for Windows
 2. Connect your devices via adb `adb connect 192.168.178.101`
