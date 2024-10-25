@@ -6,29 +6,29 @@ MITMPKG=""
 setprop net.dns1 1.1.1.1 && setprop net.dns2 8.8.8.8
 
 # Stops MITM and Pogo and restarts MITM MappingService
-force_restart() {
-    pogo_pid=$(pidof $POGOPKG)
-    if [ -n "$pogo_pid" ]; then
-        killall $POGOPKG
-    fi
-    if [[ -n "$MITMPKG" ]]; then
-        am force-stop $MITMPKG
-        sleep 5
-        am start -n "$MITMPKG/.MainActivity"
-        log -p i -t eMagiskcosmogJp "Cosmog was restarted!"
-    fi
-}
+#force_restart() {
+#    pogo_pid=$(pidof $POGOPKG)
+#    if [ -n "$pogo_pid" ]; then
+#        killall $POGOPKG
+#    fi
+#    if [[ -n "$MITMPKG" ]]; then
+#        am force-stop $MITMPKG
+#        sleep 5
+#        am start -n "$MITMPKG/.MainActivity"
+#        log -p i -t eMagiskcosmogJp "Cosmog was restarted!"
+#    fi
+#}
 
-check_mitmpkg() {
-
-	if [ "$(pm list packages com.nianticlabs.pokemongo.ares)" = "package:com.nianticlabs.pokemongo.ares" ]; then
-		log -p i -t eMagiskcosmogJp "Found Cosmog (Ares pkg name version)!"
-		MITMPKG=com.nianticlabs.pokemongo.ares
-	else
-		log -p i -t eMagiskCosmogJp "No MITM installed. Abort!"
-		exit 1
-	fi
-}
+#check_mitmpkg() {
+#
+#	if [ "$(pm list packages com.nianticlabs.pokemongo.ares)" = "package:com.nianticlabs.pokemongo.ares" ]; then
+#		log -p i -t eMagiskcosmogJp "Found Cosmog (Ares pkg name version)!"
+#		MITMPKG=com.nianticlabs.pokemongo.ares
+#	else
+#		log -p i -t eMagiskCosmogJp "No MITM installed. Abort!"
+#		exit 1
+#	fi
+#}
 
 autoupdate() {
     local last_check_file="/data/local/tmp/.last_autoupdate_check"
@@ -66,51 +66,51 @@ autoupdate() {
 
 # Launch Cosmog every 20 minutes and monitor logcat for "IntegritySolver"
 # Launch health check and MITM monitoring
-monitor_and_launch() {
-    log -p i -t eMagiskcosmogJp "Started health check!"
+#monitor_and_launch() {
+#    log -p i -t eMagiskcosmogJp "Started health check!"
 
     # First check if the MITM package is installed
-    if result=$(check_mitmpkg); then
-        (
-            log -p i -t eMagiskcosmogJp "eMagisk: Astu's fork part. Starting health check service in 4 minutes... MITM: $MITMPKG"
-            counter=0
-            rdmDeviceID=1
-            log -p i -t eMagiskcosmogJp "Start counter at $counter"
-            
-            while true; do
-                current_time=$(date +"%H:%M")
-
-                # Check if com.nianticlabs.pokemongo is running
-                BUSYBOX_PS_OUTPUT=$(busybox ps | grep -E "com\.nianticlabs\.pokemongo")
-                
-                if [ -n "$BUSYBOX_PS_OUTPUT" ]; then
-                    log -p i -t eMagiskcosmogJp "com.nianticlabs.pokemongo is running. Adjusting I/O priority..."
-                    ionice -p $(pidof com.nianticlabs.pokemongo) -c 0 -n 0
-                    pids=$(/data/adb/magisk/busybox ps -T | /data/adb/magisk/busybox grep pokemongo | /data/adb/magisk/busybox cut -d' ' -f1 | /data/adb/magisk/busybox xargs)
-                    for i in $pids; do /data/adb/magisk/busybox chrt -r -p 99 $i & done
-                fi
-
-                log -p i -t eMagiskcosmogJp "Checking logcat for IntegritySolver in the last minute..."
-                if logcat -d -v time | awk -v curr_time="$current_time" '$1 ~ /^[0-9]{2}-[0-9]{2}$/ && $2 >= curr_time { found=1 } /IntegritySolver/ && found { exit 0 } END { exit 1 }'; then
-                    log -p i -t eMagiskcosmogJp "IntegritySolver found in logcat. No restart needed."
-                else
-                    log -p e -t eMagiskcosmogJp "IntegritySolver not found. Restarting $MITMPKG."
-                    am start -n $MITMPKG/.MainActivity
-                fi
-
-                # Clear logcat buffer every hour
-                current_minute=$(date +%M)
-                if [ "$current_minute" = "00" ]; then
-                    logcat -c
-                fi
-
-                sleep 300  # 5 minutes
-            done
-        ) &
-    else
-        log -p i -t eMagiskcosmogJp "MITM isn't installed on this device! The daemon will stop."
-    fi
-}
+#    if result=$(check_mitmpkg); then
+#        (
+#            log -p i -t eMagiskcosmogJp "eMagisk: Astu's fork part. Starting health check service in 4 minutes... MITM: $MITMPKG"
+#            counter=0
+#            rdmDeviceID=1
+#            log -p i -t eMagiskcosmogJp "Start counter at $counter"
+#            
+#            while true; do
+#                current_time=$(date +"%H:%M")
+#
+#                # Check if com.nianticlabs.pokemongo is running
+#                BUSYBOX_PS_OUTPUT=$(busybox ps | grep -E "com\.nianticlabs\.pokemongo")
+#                
+#                if [ -n "$BUSYBOX_PS_OUTPUT" ]; then
+#                    log -p i -t eMagiskcosmogJp "com.nianticlabs.pokemongo is running. Adjusting I/O priority..."
+#                    ionice -p $(pidof com.nianticlabs.pokemongo) -c 0 -n 0
+#                    pids=$(/data/adb/magisk/busybox ps -T | /data/adb/magisk/busybox grep pokemongo | /data/adb/magisk/busybox cut -d' ' -f1 | /data/adb/magisk/busybox xargs)
+#                    for i in $pids; do /data/adb/magisk/busybox chrt -r -p 99 $i & done
+#                fi
+#
+#                log -p i -t eMagiskcosmogJp "Checking logcat for IntegritySolver in the last minute..."
+#                if logcat -d -v time | awk -v curr_time="$current_time" '$1 ~ /^[0-9]{2}-[0-9]{2}$/ && $2 >= curr_time { found=1 } /IntegritySolver/ && found { exit 0 } END { exit 1 }'; then
+#                    log -p i -t eMagiskcosmogJp "IntegritySolver found in logcat. No restart needed."
+#                else
+#                    log -p e -t eMagiskcosmogJp "IntegritySolver not found. Restarting $MITMPKG."
+#                    am start -n $MITMPKG/.MainActivity
+#                fi
+#
+#                # Clear logcat buffer every hour
+#                current_minute=$(date +%M)
+#                if [ "$current_minute" = "00" ]; then
+#                    logcat -c
+#                fi
+#
+#                sleep 300  # 5 minutes
+#            done
+#        ) &
+#    else
+#        log -p i -t eMagiskcosmogJp "MITM isn't installed on this device! The daemon will stop."
+#    fi
+#}
 
 
 # Check if the magiskhide binary exists
@@ -246,9 +246,14 @@ if [ ! -f "$cacert_path" ]; then
 fi
 
 # Main program starts here
-check_mitmpkg
-force_restart
+#check_mitmpkg
+#force_restart
 autoupdate
-monitor_and_launch
-
+#monitor_and_launch
+while true
+do
+    am start -n com.nianticlabs.pokemongo.ares/com.nianticlabs.pokemongo.ares.MainActivity
+    log -p i -t eMagiskcosmogJp "Put Cosmog infront. Waiting 10 miutes to do it again."
+    sleep 600 # Wait for 600 seconds (10 minutes)
+done
 #ENDOFFILE
