@@ -34,7 +34,7 @@ autoupdate() {
     fi
 
     # Update logic
-    autoupdate_url="https://raw.githubusercontent.com/MCraftetHD/eMagisk/master/custom/ATVServices.sh"
+    autoupdate_url="https://raw.githubusercontent.com/MCraftetHD/eMagisk/refs/heads/master/custom/ATVServices.sh"
     script_path="/data/adb/modules/emagisk/ATVServices.sh"
     curl_output=$(curl -sSL --insecure -o updated_script.sh -w "%{http_code}" "$autoupdate_url")
     
