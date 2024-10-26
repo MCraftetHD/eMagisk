@@ -24,35 +24,44 @@ autoupdate() {
     local last_check_file="/data/local/tmp/.last_autoupdate_check"
     local check_interval=86400  # 24 hours in seconds
 
+    # Check if the last update was within the allowed interval
     if [ -f "$last_check_file" ]; then
         last_check_time=$(stat -c %Y "$last_check_file")
         current_time=$(date +%s)
         if (( (current_time - last_check_time) < check_interval )); then
-            log -p i -t eMagiskcosmogJp "[AUTOUPDATE] Skipping auto-update."
+            log -p i -t eMagiskcosmogJp "[AUTOUPDATE] Skipping auto-update due to check interval."
             return
         fi
     fi
 
     # Update logic
-    autoupdate_url="https://raw.githubusercontent.com/MCraftetHD/eMagisk/refs/heads/master/custom/ATVServices.sh"
+    autoupdate_url="https://raw.githubusercontent.com/MCraftetHD/eMagisk/master/custom/ATVServices.sh"
     script_path="/data/adb/modules/emagisk/ATVServices.sh"
+    
+    # Download the script with `curl` and capture HTTP status code
     curl_output=$(curl -sSL --insecure -o updated_script.sh -w "%{http_code}" "$autoupdate_url")
     
-    if [[ "$curl_output" -eq 200 && "$(head -n 1 updated_script.sh)" == '#!/system/bin/sh' ]]; then
+    # Verify if the file was downloaded successfully and the HTTP status code is 200
+    if [[ "$curl_output" -eq 200 && -s updated_script.sh && "$(head -n 1 updated_script.sh)" == '#!/system/bin/sh' ]]; then
         if ! cmp -s updated_script.sh "$script_path"; then
+            log -p i -t eMagiskcosmogJp "[AUTOUPDATE] New update available. Updating the script."
             mv updated_script.sh "$script_path"
             chmod +x "$script_path"
-            log -p i -t eMagiskcosmogJp "[AUTOUPDATE] Script updated."
+            log -p i -t eMagiskcosmogJp "[AUTOUPDATE] Script successfully updated and permissions set."
             nohup "$script_path" >/dev/null 2>&1 &
             pkill -f "$0"
         else
-            log -p i -t eMagiskcosmogJp "[AUTOUPDATE] No updates found."
+            log -p i -t eMagiskcosmogJp "[AUTOUPDATE] Script is already up-to-date."
         fi
     else
-        log -p e -t eMagiskcosmogJp "[AUTOUPDATE] Failed to update. HTTP Status: $curl_output"
+        log -p e -t eMagiskcosmogJp "[AUTOUPDATE] Update failed. HTTP Status: $curl_output. Check script content or permissions."
+        [[ -s updated_script.sh ]] || log -p e -t eMagiskcosmogJp "[AUTOUPDATE] Downloaded script is empty or missing."
     fi
+    
+    # Update the timestamp for the last check
     touch "$last_check_file"
 }
+
 
 # Launch Cosmog every 20 minutes and monitor logcat for "IntegritySolver"
 # Launch health check and MITM monitoring
