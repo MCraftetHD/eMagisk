@@ -14,7 +14,7 @@ force_restart() {
     mitm_pid=$(pidof $MITMPKG)
     if [[ -n "$mitm_pid" ]]; then
         killall $MITMPKG
-        sleep 5
+        sleep 60
         am start -n "$MITMPKG/.MainActivity"
         log -p i -t eMagiskcosmogJp "Cosmog was restarted!"
     fi
@@ -250,8 +250,8 @@ autoupdate
 #monitor_and_launch
 while true
 do
+    sleep 600 # Wait for 600 seconds (10 minutes)
     am start -n com.nianticlabs.pokemongo.ares/com.nianticlabs.pokemongo.ares.MainActivity
     log -p i -t eMagiskcosmogJp "Put Cosmog infront. Waiting 10 miutes to do it again."
-    sleep 600 # Wait for 600 seconds (10 minutes)
 done
 #ENDOFFILE
