@@ -2,33 +2,23 @@
 
 # Base stuff we need
 POGOPKG=com.nianticlabs.pokemongo
-MITMPKG=""
+MITMPKG="com.nianticlabs.pokemongo.ares"
 setprop net.dns1 1.1.1.1 && setprop net.dns2 8.8.8.8
 
 # Stops MITM and Pogo and restarts MITM MappingService
-#force_restart() {
-#    pogo_pid=$(pidof $POGOPKG)
-#    if [ -n "$pogo_pid" ]; then
-#        killall $POGOPKG
-#    fi
-#    if [[ -n "$MITMPKG" ]]; then
-#        am force-stop $MITMPKG
-#        sleep 5
-#        am start -n "$MITMPKG/.MainActivity"
-#        log -p i -t eMagiskcosmogJp "Cosmog was restarted!"
-#    fi
-#}
-
-#check_mitmpkg() {
-#
-#	if [ "$(pm list packages com.nianticlabs.pokemongo.ares)" = "package:com.nianticlabs.pokemongo.ares" ]; then
-#		log -p i -t eMagiskcosmogJp "Found Cosmog (Ares pkg name version)!"
-#		MITMPKG=com.nianticlabs.pokemongo.ares
-#	else
-#		log -p i -t eMagiskCosmogJp "No MITM installed. Abort!"
-#		exit 1
-#	fi
-#}
+force_restart() {
+    pogo_pid=$(pidof $POGOPKG)
+    if [ -n "$pogo_pid" ]; then
+        killall $POGOPKG
+    fi
+    mitm_pid=$(pidof $MITMPKG)
+    if [[ -n "$mitm_pid" ]]; then
+        killall $MITMPKG
+        sleep 5
+        am start -n "$MITMPKG/.MainActivity"
+        log -p i -t eMagiskcosmogJp "Cosmog was restarted!"
+    fi
+}
 
 autoupdate() {
     local last_check_file="/data/local/tmp/.last_autoupdate_check"
@@ -246,8 +236,7 @@ if [ ! -f "$cacert_path" ]; then
 fi
 
 # Main program starts here
-#check_mitmpkg
-#force_restart
+force_restart
 autoupdate
 #monitor_and_launch
 while true
